@@ -53,7 +53,8 @@ function snippet(s, n = 60){ s = (s || '').replace(/\s+/g, ' ').trim(); return s
    Data layer
    ========================================================================== */
 function supabaseApi(){
-  const supa = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+  // Tables live in the `tones` schema of the Matrix & Mind project
+  const supa = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, { db: { schema: 'tones' } });
   const chk = (r) => { if(r.error) throw r.error; return r.data; };
   return {
     supa,
@@ -250,7 +251,7 @@ function render(){
     }
     if(!matches.length){
       if(searching) out.push(el('div', 'empty', `Nothing matches “${Q.raw}”. Tap ＋ to add it to the inbox for Claude.`));
-      else if(!state.entries.length) out.push(el('div', 'empty', DEMO ? 'No entries.' : 'No entries yet. If you expected your repository here, check that your account is in the owners table (README, step 4).'));
+      else if(!state.entries.length) out.push(el('div', 'empty', DEMO ? 'No entries.' : 'No entries yet. If you expected your repository here, check that your account is in the tones.owners table (README, step 3).'));
       else out.push(el('div', 'empty', 'No entries with these filters. Check the tone filter in Sort and group.'));
     }
   }
