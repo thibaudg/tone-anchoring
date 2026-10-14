@@ -45,7 +45,7 @@
         <button class="sq add" id="add-btn" aria-label="Add to inbox">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         </button>
-        <button class="sq more" id="menu-btn" aria-label="Menu">⋯</button>
+        <button class="sq more" id="menu-btn" aria-label="Menu">⋯<span class="mbadge" id="menu-badge" style="display:none"></span></button>
       </div>
       <div class="filter-row">
         <div class="seg" id="filter">
@@ -62,13 +62,32 @@
     <div id="list"><div class="loading">Loading…</div></div>
   </div>
 
+  <!-- ===== ENTRY PAGE ===== -->
+  <div class="view" id="view-entry">
+    <div class="etop">
+      <button class="back" id="entry-back">‹ Repository</button>
+      <button class="lnk" id="entry-edit">Edit</button>
+    </div>
+    <div id="entry-body"></div>
+  </div>
+
+  <!-- ===== REVIEW ===== -->
+  <div class="view" id="view-review">
+    <div class="rv-top">
+      <button class="rv-x" id="rv-close" aria-label="Close review">✕</button>
+      <div class="rv-pb" id="rv-top"><i id="rv-bar"></i></div>
+      <span class="rv-count" id="rv-count"></span>
+    </div>
+    <div id="rv-body"></div>
+  </div>
+
   <!-- ===== CHANGES ===== -->
   <div class="view" id="view-changes">
     <div class="top">
       <div class="top-row" style="margin-bottom:0">
         <button class="back" id="changes-back">‹ Repository</button>
       </div>
-      <h1 style="font-size:24px;font-weight:700;margin:6px 0 0;letter-spacing:-.02em">Changes</h1>
+      <h1 id="changes-title" style="font-size:24px;font-weight:700;margin:6px 0 0;letter-spacing:-.02em">Changes</h1>
     </div>
     <div id="changes-list"><div class="loading">Loading…</div></div>
   </div>
@@ -84,6 +103,10 @@
   <div id="add-ref" style="display:none;margin-bottom:8px"></div>
   <textarea id="add-text" placeholder="Paste from Claude or type…"></textarea>
   <div class="hint" id="add-hint">Free text or paste from Claude. No format needed.</div>
+  <div class="swrow" id="add-nothc-row">
+    <div><div>Not from HelloChinese</div><div class="sub">Gets reviewed first</div></div>
+    <button class="switch" id="add-nothc" role="switch" aria-checked="false" aria-label="Not from HelloChinese"><i></i></button>
+  </div>
   <div class="btn-row"><button class="btn ghost" data-close>Cancel</button><button class="btn go" id="add-save">Add</button></div>
 </div>
 
@@ -103,6 +126,7 @@
 <div class="sheet" id="sheet-menu" role="dialog" aria-label="Menu">
   <div class="grab"></div>
   <div class="stats" id="stats">…</div>
+  <button class="mi accent strong" id="m-review"><span class="ic">▤</span>Review<span class="side" id="review-side"></span></button>
   <button class="mi" id="m-changes"><span class="ic">↺</span>Changes<span class="side" id="changes-today"></span></button>
   <button class="mi" id="m-export"><span class="ic">↓</span>Export JSON</button>
   <button class="mi" disabled><span class="ic">≡</span>Mnemonic rules (later)</button>
@@ -112,6 +136,8 @@
 <div class="toast" id="toast"></div>
 
 <script src="vendor/supabase.js"></script>
+<script src="vendor/fsrs.js"></script>
+<script src="pinyin.js"></script>
 <script src="config.js"></script>
 <script src="app.js"></script>
 </body>
