@@ -479,6 +479,8 @@ function back(){
 window.addEventListener('popstate', (ev) => {
   const s = ev.state;
   closeSheet();
+  // back from an entry opened during a review: return to the same card
+  if(s && s.view === 'review' && state.session && state.view !== 'review'){ go('review', {}, false); renderReview(); return; }
   if(state.view === 'review') endSession(true);
   if(!s || s.view === 'main' || s.view === 'review') go('main', {}, false);
   else if(s.view === 'entry') go('entry', { entryId: s.entryId, editEntry: false }, false);
@@ -539,7 +541,7 @@ function renderEntry(){
   const e = entryById(state.entryId);
   const box = $('entry-body');
   const from = history.state && history.state.from;
-  $('entry-back').textContent = from === 'entry' ? '‹ Back' : from === 'changes' ? '‹ Changes' : '‹ Repository';
+  $('entry-back').textContent = from === 'entry' ? '‹ Back' : from === 'changes' ? '‹ Changes' : from === 'review' ? '‹ Review' : '‹ Repository';
   if(!e){ $('entry-edit').style.visibility = 'hidden'; box.replaceChildren(el('div', 'empty', 'This entry is no longer in the repository.')); return; }
   const editing = state.editEntry;
   $('entry-edit').style.visibility = editing ? 'hidden' : '';
@@ -677,6 +679,10 @@ function toFsrsCard(c, now){
     reps: c.reps, lapses: c.lapses, state: c.state, last_review: c.last_review ? new Date(c.last_review) : undefined,
   };
 }
+function shuffle(a){
+  for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
 function newToday(){ return state.reviewsToday.filter(r => r.was_new).length; }
 
 // ① Review soon flags ② due cards ③ new cards up to the daily limit
@@ -691,9 +697,10 @@ function buildQueue(){
   const chars = new Set(state.entries.filter(e => e.kind === 'character').map(e => e.hanzi));
   const seen = new Set(state.entries.filter(e => e.kind === 'character' && !isNew(e)).map(e => e.hanzi));
   const fresh = state.entries.filter(e => !fl.has(e.id) && isNew(e) && (e.kind === 'character' || [...e.hanzi].every(ch => !chars.has(ch) || seen.has(ch))))
-    .sort((a, b) => (isOutsideHc(b) - isOutsideHc(a)) || a.created_at.localeCompare(b.created_at) || a._plain.localeCompare(b._plain));
   const room = Math.max(0, state.newPerDay - newToday());
-  return { flagged, due, fresh: fresh.slice(0, room), freshLeft: fresh.length };
+  // New cards in random order (not-from-HelloChinese first), so the order gives nothing away
+  const picked = [...shuffle(fresh.filter(isOutsideHc)), ...shuffle(fresh.filter(e => !isOutsideHc(e)))].slice(0, room);
+  return { flagged, due, fresh: picked, freshLeft: fresh.length };
 }
 
 function updateBadge(){
@@ -737,6 +744,10 @@ function renderReview(){
   else if(s.phase === 'back') body.replaceChildren(...reviewBack(s));
   else if(s.phase === 'summary') body.replaceChildren(...reviewSummary(s));
   else body.replaceChildren(...reviewEmpty());
+  // After Check the keyboard closes but iPhone leaves the page scrolled: go back to the top
+  window.scrollTo(0, 0);
+  setTimeout(() => window.scrollTo(0, 0), 120);
+  setTimeout(() => window.scrollTo(0, 0), 450);
 }
 
 function reviewFront(s){
@@ -762,9 +773,9 @@ function reviewFront(s){
     revealAnswer(inp.value);
   };
   inp.oninput = () => { err.textContent = ''; };
-  const dk = el('button', 'lnk soft rv-dk', 'Don’t know'); dk.type = 'button';
+  const dk = el('button', 'lnk rv-dk', 'Don’t know'); dk.type = 'button';
   dk.onclick = () => revealAnswer('');
-  form.append(inp, err, hintLine, check, dk);
+  form.append(inp, err, hintLine, dk, check);
   // iPhone scrolls the page when the keyboard opens; keep the card in view
   inp.addEventListener('focus', () => { setTimeout(pinReviewTop, 50); setTimeout(pinReviewTop, 350); });
   setTimeout(() => inp.focus(), 60);
@@ -772,7 +783,7 @@ function reviewFront(s){
 }
 
 function pinReviewTop(){
-  if(state.view === 'review' && state.session && state.session.phase === 'front') window.scrollTo(0, 0);
+  if(state.view === 'review' && state.session) window.scrollTo(0, 0);
 }
 if(window.visualViewport) window.visualViewport.addEventListener('resize', pinReviewTop);
 
@@ -800,7 +811,10 @@ function reviewBack(s){
   head.appendChild(tilesFor(e, e.kind === 'word' ? 'btile w' : 'btile'));
   const ht = el('div', 'ehtext');
   ht.append(el('div', 'py big', e.pinyin), el('div', 'mn', e.meaning || ''));
-  head.appendChild(ht); wrap.appendChild(head);
+  head.appendChild(ht);
+  const open = linkBtn('Entry ›', () => openEntry(e.id)); open.classList.add('rv-open');
+  head.appendChild(open);
+  wrap.appendChild(head);
 
   const chips = el('div', 'chips');
   if(r.empty) chips.appendChild(el('span', 'chip bad', 'Didn’t know'));
@@ -966,7 +980,7 @@ function reviewEmpty(){
 }
 function startReviewInPlace(){
   const q = buildQueue();
-  const ids = [...q.flagged, ...q.due, ...q.fresh].map(e => e.id);
+  const ids = [...q.flagged, ...shuffle([...q.due, ...q.fresh])].map(e => e.id);   // flags first, then due and new mixed
   state.session = { queue: ids, pos: 0, done: [], started: Date.now(), phase: ids.length ? 'front' : 'empty', early: false, answer: '', result: null, meaning: true, preview: null, shownAt: Date.now(), saving: false, counts: { fresh: q.fresh.length, due: q.due.length + q.flagged.length } };
   renderReview();
 }

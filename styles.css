@@ -241,7 +241,7 @@ textarea.ed:focus{outline:2px solid var(--indigo);}
 .rv-err{color:var(--danger);font-size:13px;margin:6px 2px 0;min-height:0;}
 .rv-err:empty{display:none;}
 .rv-form .primary{margin-top:2px;}
-.rv-dk{display:block;margin:8px auto 0;font-size:13.5px;padding:6px 10px;}
+.rv-dk{display:block;margin:0 auto 8px;font-size:14px;padding:4px 10px;color:var(--danger);font-weight:600;}
 .rv-back{background:var(--card);border-radius:18px;padding:18px;box-shadow:0 1px 2px rgba(0,0,0,.05);}
 .chips{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 2px;}
 .chip{font-size:12.5px;border-radius:8px;padding:4px 9px;font-weight:500;}
@@ -273,3 +273,5 @@ textarea.ed:focus{outline:2px solid var(--indigo);}
 /* review: keep the card above the iPhone keyboard */
 #view-review .hint{margin:5px 2px 8px;}
 body.reviewing .wrap{padding-bottom:0;}
+.rv-back .ehead{position:relative;}
+.rv-open{margin-left:auto;align-self:flex-start;font-size:13.5px;}
