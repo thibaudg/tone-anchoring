@@ -231,17 +231,17 @@ textarea.ed:focus{outline:2px solid var(--indigo);}
 .rv-pb{flex:1;height:5px;background:#DDE0E5;border-radius:3px;overflow:hidden;}
 .rv-pb i{display:block;height:100%;width:0;background:var(--indigo);border-radius:3px;transition:width .2s;}
 .rv-count{font-size:12.5px;color:var(--faint);min-width:44px;text-align:right;}
-.rv-front{background:var(--card);border-radius:18px;padding:52px 18px 40px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.05);}
-.rv-big{font-size:96px;line-height:1;color:#4A4F57;}
-.rv-big.word{font-size:64px;letter-spacing:.04em;}
-.rv-kind{font-size:12.5px;color:var(--faint);margin-top:16px;}
-.rv-form{margin-top:14px;}
+.rv-front{background:var(--card);border-radius:18px;padding:22px 18px 16px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.05);}
+.rv-big{font-size:76px;line-height:1;color:#4A4F57;}
+.rv-big.word{font-size:52px;letter-spacing:.04em;}
+.rv-kind{font-size:12.5px;color:var(--faint);margin-top:10px;}
+.rv-form{margin-top:10px;}
 .rv-input{width:100%;border:none;border-radius:13px;background:var(--card);padding:14px 15px;font-family:inherit;font-size:19px;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.05);}
 .rv-input:focus{outline:2px solid var(--indigo);}
 .rv-err{color:var(--danger);font-size:13px;margin:6px 2px 0;min-height:0;}
 .rv-err:empty{display:none;}
 .rv-form .primary{margin-top:2px;}
-.rv-dk{display:block;margin:12px auto 0;font-size:13.5px;}
+.rv-dk{display:block;margin:8px auto 0;font-size:13.5px;padding:6px 10px;}
 .rv-back{background:var(--card);border-radius:18px;padding:18px;box-shadow:0 1px 2px rgba(0,0,0,.05);}
 .chips{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 2px;}
 .chip{font-size:12.5px;border-radius:8px;padding:4px 9px;font-weight:500;}
@@ -269,3 +269,7 @@ textarea.ed:focus{outline:2px solid var(--indigo);}
 .rv-setting .pill{background:var(--card);}
 .rv-setting .pill.on{background:var(--ink);}
 .rv-btns{display:flex;gap:8px;margin-top:22px;}
+
+/* review: keep the card above the iPhone keyboard */
+#view-review .hint{margin:5px 2px 8px;}
+body.reviewing .wrap{padding-bottom:0;}

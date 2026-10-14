@@ -467,6 +467,7 @@ function go(view, extra = {}, push = true){
   state.view = view; Object.assign(state, extra);
   if(push) history.pushState({ view, from, ...extra, depth: ((history.state && history.state.depth) || 0) + 1 }, '');
   showView(view);
+  document.body.classList.toggle('reviewing', view === 'review');
   if(view === 'main'){ render(); requestAnimationFrame(() => window.scrollTo(0, state.mainScroll)); }
   else window.scrollTo(0, 0);
   if(view === 'entry') renderEntry();
@@ -764,9 +765,16 @@ function reviewFront(s){
   const dk = el('button', 'lnk soft rv-dk', 'Don’t know'); dk.type = 'button';
   dk.onclick = () => revealAnswer('');
   form.append(inp, err, hintLine, check, dk);
+  // iPhone scrolls the page when the keyboard opens; keep the card in view
+  inp.addEventListener('focus', () => { setTimeout(pinReviewTop, 50); setTimeout(pinReviewTop, 350); });
   setTimeout(() => inp.focus(), 60);
   return [front, form];
 }
+
+function pinReviewTop(){
+  if(state.view === 'review' && state.session && state.session.phase === 'front') window.scrollTo(0, 0);
+}
+if(window.visualViewport) window.visualViewport.addEventListener('resize', pinReviewTop);
 
 function revealAnswer(answer){
   const s = state.session, e = curEntry();
