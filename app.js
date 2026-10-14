@@ -740,22 +740,46 @@ function renderReview(){
   $('rv-bar').style.width = total ? `${Math.round(100 * s.pos / total)}%` : '0';
   $('rv-count').textContent = `${Math.min(s.pos + 1, total)} / ${total}`;
   const body = $('rv-body');
-  if(s.phase === 'front') body.replaceChildren(...reviewFront(s));
-  else if(s.phase === 'back') body.replaceChildren(...reviewBack(s));
-  else if(s.phase === 'summary') body.replaceChildren(...reviewSummary(s));
-  else body.replaceChildren(...reviewEmpty());
-  // After Check the keyboard closes but iPhone leaves the page scrolled: go back to the top
-  window.scrollTo(0, 0);
-  setTimeout(() => window.scrollTo(0, 0), 120);
-  setTimeout(() => window.scrollTo(0, 0), 450);
+  const scrollBox = (kids) => { const d = el('div', 'rv-scroll'); d.append(...kids); return d; };
+  body.className = `rv-phase-${s.phase}`;
+  if(s.phase === 'front'){
+    const kids = reviewFront(s);
+    if(s.phase === 'summary'){ body.className = 'rv-phase-summary'; body.replaceChildren(scrollBox(kids)); }
+    else body.replaceChildren(...kids);
+  }
+  else if(s.phase === 'back'){ const [card, rates] = reviewBack(s); body.replaceChildren(scrollBox([card]), rates); }
+  else if(s.phase === 'summary') body.replaceChildren(scrollBox(reviewSummary(s)));
+  else body.replaceChildren(scrollBox(reviewEmpty()));
+  syncViewport();
 }
+
+/* The review screen is sized to the part of the screen the keyboard leaves visible
+   (visualViewport), so the keyboard never covers anything and the page never scrolls. */
+function syncViewport(){
+  const vv = window.visualViewport;
+  const h = vv ? vv.height : window.innerHeight;
+  const top = vv ? vv.offsetTop : 0;
+  const root = document.documentElement.style;
+  root.setProperty('--vv-h', `${Math.round(h)}px`);
+  root.setProperty('--vv-top', `${Math.round(top)}px`);
+  document.body.classList.toggle('kb-open', !!vv && vv.height < window.innerHeight - 100);
+  if(state.view === 'review' && window.scrollY) window.scrollTo(0, 0);
+}
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', syncViewport);
+  window.visualViewport.addEventListener('scroll', syncViewport);
+}
+window.addEventListener('resize', syncViewport);
 
 function reviewFront(s){
   const e = curEntry();
   if(!e){ s.pos++; return s.pos < s.queue.length ? reviewFront(s) : (s.phase = 'summary', reviewSummary(s)); }
   s.shownAt = Date.now();
   const front = el('div', 'rv-front');
-  front.appendChild(el('div', `rv-big${e.kind === 'word' ? ' word' : ''}`, e.hanzi));
+  const big = el('div', 'rv-big', e.hanzi);
+  const nch = [...e.hanzi].length;
+  if(nch > 1) big.style.fontSize = `min(${Math.round(80 / nch)}cqw, 38cqh, 84px)`;
+  front.appendChild(big);
   const hint = readingHint(e);
   const c = state.cards.get(e.id);
   front.appendChild(el('div', 'rv-kind', [e.kind === 'word' ? 'Word' : 'Character', hint, c && c.flagged_at ? '· you flagged this' : null].filter(Boolean).join(' ')));
@@ -776,16 +800,10 @@ function reviewFront(s){
   const dk = el('button', 'lnk rv-dk', 'Don’t know'); dk.type = 'button';
   dk.onclick = () => revealAnswer('');
   form.append(inp, err, hintLine, dk, check);
-  // iPhone scrolls the page when the keyboard opens; keep the card in view
-  inp.addEventListener('focus', () => { setTimeout(pinReviewTop, 50); setTimeout(pinReviewTop, 350); });
+  inp.addEventListener('focus', () => { syncViewport(); setTimeout(syncViewport, 300); });
   setTimeout(() => inp.focus(), 60);
   return [front, form];
 }
-
-function pinReviewTop(){
-  if(state.view === 'review' && state.session) window.scrollTo(0, 0);
-}
-if(window.visualViewport) window.visualViewport.addEventListener('resize', pinReviewTop);
 
 function revealAnswer(answer){
   const s = state.session, e = curEntry();
